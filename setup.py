@@ -34,5 +34,8 @@ setup(
             "typing_extensions",
         },
     },
+    package_data={
+        "minopt": ["py.typed"],
+    },
     python_requires=">=3.10",
 )
