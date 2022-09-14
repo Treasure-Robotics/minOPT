@@ -1,6 +1,7 @@
+import contextlib
+
 import torch
 from torch.amp import autocast
-import contextlib
 
 from minopt.model import opt
 from minopt.sampling import Sampler
