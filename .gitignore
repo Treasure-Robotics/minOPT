@@ -1,0 +1,9 @@
+# .gitignore
+
+# Python
+*.py[oc]
+__pycache__/
+*.egg-info
+.eggs/
+build/
+.pytest_cache/
