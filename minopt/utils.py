@@ -148,5 +148,5 @@ def auto_device_and_dtype() -> Tuple[str, torch.device, torch.dtype]:
     if torch.cuda.is_available():
         return "cuda", torch.device("cuda"), torch.bfloat16
     if torch.backends.mps.is_available():
-        return "cpu", torch.device("mps"), torch.float32
-    return "cpu", torch.device("cpu"), torch.float32
+        return "cpu", torch.device("mps"), torch.float16
+    return "cpu", torch.device("cpu"), torch.bfloat16
