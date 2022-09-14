@@ -9,7 +9,9 @@ def test_conv_layer_norm() -> None:
     """Tests that the ConvLayerNorm model matches the base later norm model."""
 
     _, device, _ = auto_device_and_dtype()
-    dtype = torch.float64
+    is_mps = device == torch.device("mps")
+    dtype = torch.float32 if is_mps else torch.float64
+    eps = 1e-4 if is_mps else 1e-8
     weight = torch.randn(16, device=device, dtype=dtype)
     bias = torch.randn(16, device=device, dtype=dtype)
 
@@ -27,4 +29,4 @@ def test_conv_layer_norm() -> None:
     y_out = conv_norm(x)
 
     assert y_ref.shape == y_out.shape
-    assert (y_ref - y_out).abs().max() < 1e-8
+    assert (y_ref - y_out).abs().max() < eps
