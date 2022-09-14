@@ -60,7 +60,6 @@ disable = [
 generated-members = [
     "tensorrt.*",
     "torch.*",
-    "tqdm.*",
 ]
 
 [tool.mypy]
@@ -86,7 +85,6 @@ module = [
     "pytest.*",
     "setuptools.*",
     "torch.*",
-    "tqdm.*",
 ]
 
 ignore_missing_imports = true
