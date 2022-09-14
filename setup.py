@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
-    name="min-opt",
+    name="minopt",
     version="0.0.1",
     description="MinOPT model repository",
     author="Benjamin Bolte",
