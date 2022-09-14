@@ -19,7 +19,7 @@ import torch
 # Pre-trained weights are loaded separately; you need to set the `MODEL_DIR`
 # environment variable to point at the root directory where you would like to
 # download the model.
-model = torch.hub.load("treasurerobotics/mingpt", "opt_125m")
+model = torch.hub.load("treasure-robotics/minopt", "opt_125m")
 
 # All models have the same API. The KV caches can be dropped during training.
 next_tokens, kv_caches = model(tokens)
@@ -28,7 +28,7 @@ next_tokens, kv_caches = model(tokens)
 - Alternatively, can clone and install:
 
 ```bash
-pip install git@github.com:Treasure-Robotics/minOPT.git
+pip install git+https://github.com/Treasure-Robotics/minOPT
 ```
 
 Then:
