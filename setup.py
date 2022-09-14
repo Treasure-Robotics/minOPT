@@ -10,7 +10,7 @@ setup(
     version="0.0.1",
     description="MinOPT model repository",
     author="Benjamin Bolte",
-    url="https://github.com/treasure-robotics/minopt",
+    url="https://github.com/Treasure-Robotics/minOPT",
     long_description=long_description,
     long_description_content_type="text/markdown",
     classifiers=[

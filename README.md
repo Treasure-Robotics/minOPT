@@ -37,6 +37,12 @@ from minopt.model import opt
 model = opt("opt_125m")
 ```
 
+### Requirements
+
+- Python 3.10
+- PyTorch
+- HuggingFace Transformers (for tokenizer)
+
 ### Sample from Pre-trained Model
 
 ```bash
