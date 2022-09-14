@@ -1,5 +1,6 @@
 import math
 from contextlib import contextmanager
+from functools import reduce
 from pathlib import Path
 from typing import (
     Callable,
@@ -12,7 +13,6 @@ from typing import (
     Tuple,
 )
 
-import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import Tensor, nn
@@ -899,7 +899,7 @@ def load_sharded_weights(
             self.flat_params = flat_params
 
         def take_out_(self, shape: Sequence[int]) -> Tensor:
-            sp = int(np.prod(shape))
+            sp = int(reduce(lambda a, b: a * b, shape))
             tensor = self.flat_params[:sp].view(*shape).to(device, dtype)
             self.flat_params = self.flat_params[sp:]
             return tensor

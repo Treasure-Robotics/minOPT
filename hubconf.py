@@ -16,7 +16,7 @@ Example usage:
     ```
 """
 
-dependencies = ["torch", "numpy", "tqdm"]
+dependencies = ["torch"]
 
 # pylint: disable=wrong-import-position
 # pylint: disable=unused-import

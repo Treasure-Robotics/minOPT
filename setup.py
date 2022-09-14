@@ -18,8 +18,6 @@ setup(
     ],
     install_requires=[
         "torch>=1.12",
-        "transformers",
-        "tqdm",
     ],
     extras_require={
         "dev": {
@@ -30,8 +28,12 @@ setup(
             "mypy",
             "pylint",
             "pytest",
+            "transformers",
             "types-setuptools",
             "typing_extensions",
+        },
+        "scripts": {
+            "transformers",
         },
     },
     package_data={

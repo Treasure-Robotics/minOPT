@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Iterator, List, Tuple
 
 import torch
-from tqdm import tqdm
 
 USER_AGENT = "minopt"
 
@@ -23,28 +22,18 @@ def _get_model_dir() -> Path:
     )
 
 
-def _save_response_content(
-    content: Iterator[bytes],
-    destination: str,
-    length: int | None = None,
-) -> None:
-    with open(destination, "wb") as fh, tqdm(total=length) as pbar:
+def _save_response_content(content: Iterator[bytes], destination: str) -> None:
+    with open(destination, "wb") as fh:
         for chunk in content:
             if not chunk:
                 continue
             fh.write(chunk)
-            pbar.update(len(chunk))
 
 
 def _urlretrieve(url: str, filename: str, chunk_size: int = 1024 * 32) -> None:
-    with urllib.request.urlopen(
-        urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    ) as response:
-        _save_response_content(
-            iter(lambda: response.read(chunk_size), b""),
-            filename,
-            length=response.length,
-        )
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(request) as response:
+        _save_response_content(iter(lambda: response.read(chunk_size), b""), filename)
 
 
 def _get_redirect_url(url: str, max_hops: int = 3) -> str:

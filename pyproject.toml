@@ -21,8 +21,6 @@ testpaths = ["tests"]
 jobs = 2
 
 extension-pkg-allow-list = [
-    "numpy",
-    "tensorrt",
     "torch",
 ]
 
@@ -60,7 +58,6 @@ disable = [
 [tool.pylint.typecheck]
 
 generated-members = [
-    "numpy.*",
     "tensorrt.*",
     "torch.*",
     "tqdm.*",
@@ -86,10 +83,8 @@ disable_error_code = ["attr-defined"]
 [[tool.mypy.overrides]]
 
 module = [
-    "numpy.*",
     "pytest.*",
     "setuptools.*",
-    "tensorrt.*",
     "torch.*",
     "tqdm.*",
 ]
