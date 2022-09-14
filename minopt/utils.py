@@ -2,7 +2,7 @@ import os
 import re
 import urllib
 from pathlib import Path
-from typing import Iterator, List, Tuple
+from typing import Iterator, List, Optional, Tuple
 
 import torch
 
@@ -56,7 +56,7 @@ def _get_redirect_url(url: str, max_hops: int = 3) -> str:
 def download_url(
     url: str,
     root: str,
-    filename: str | None = None,
+    filename: Optional[str] = None,
     max_redirect_hops: int = 3,
 ) -> None:
     """Download a file from a url and place it in root.

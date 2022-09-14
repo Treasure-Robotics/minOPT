@@ -35,8 +35,8 @@ OPTKey = Literal[
 ]
 AttentionType = Literal["softmax", "sigmoid", "linear"]
 ActivationType = Literal["relu", None]
-Device = torch.device | None
-Dtype = torch.dtype | None
+Device = Optional[torch.device]
+Dtype = Optional[torch.dtype]
 
 # ---------------
 # Data structures
@@ -180,7 +180,7 @@ class ConvLayerNorm(nn.Module):
         self,
         channels: int,
         *,
-        rank: int | None = None,
+        rank: Optional[int] = None,
         eps: float = 1e-5,
         elementwise_affine: bool = True,
         device: Device = None,
@@ -315,11 +315,10 @@ class PositionalEmbeddings(nn.Embedding):
 
 
 def get_act(act: ActivationType) -> Callable[[Tensor], Tensor]:
-    match act:
-        case None:
-            return nn.Identity()
-        case "relu":
-            return nn.ReLU()
+    if act is None:
+        return nn.Identity()
+    if act == "relu":
+        return nn.ReLU()
     raise NotImplementedError(f"Unexpected activation type: {act}")
 
 
@@ -399,7 +398,7 @@ def init_meta_weights(include_buffers: bool = False) -> Iterator[None]:
     def register_empty_parameter(
         module: nn.Module,
         name: str,
-        param: nn.Parameter | None,
+        param: Optional[nn.Parameter],
     ) -> None:
         old_register_parameter(module, name, param)
         if param is not None:
@@ -411,7 +410,7 @@ def init_meta_weights(include_buffers: bool = False) -> Iterator[None]:
     def register_empty_buffer(
         module: nn.Module,
         name: str,
-        buffer: Tensor | None,
+        buffer: Optional[Tensor],
     ) -> None:
         old_register_buffer(module, name, buffer)
         if buffer is not None:
@@ -544,7 +543,7 @@ class SelfAttention(nn.Module):
         num_heads: int,
         *,
         attn_type: AttentionType = "softmax",
-        hidden_channels: int | None = None,
+        hidden_channels: Optional[int] = None,
         device: Device = None,
         dtype: Dtype = None,
         parallel_rank: int = 0,
@@ -669,7 +668,7 @@ class SelfAttentionStack(nn.Module):
         num_layers: int,
         *,
         attn_type: AttentionType = "softmax",
-        hidden_channels: int | None = None,
+        hidden_channels: Optional[int] = None,
         mult: int = 4,
         device: Device = None,
         dtype: Dtype = None,
@@ -778,7 +777,7 @@ class OPT(nn.Module):
         num_attn_heads: int,
         num_layers: int,
         *,
-        sharded_weight_urls: List[str] | None = None,
+        sharded_weight_urls: Optional[List[str]] = None,
         mult: int = 4,
         device: Device = None,
         dtype: Dtype = None,
@@ -1017,128 +1016,129 @@ def opt(
         The constructed OPT model
     """
 
-    match key:
-        case "opt_mini":
-            return OPT(
-                vocab_size=50_272,
-                hidden_size=128,
-                max_position_embeddings=128,
-                num_attn_heads=2,
-                num_layers=2,
-                device=device,
-                dtype=dtype,
-                keep_meta=keep_meta,
-            )
-        case "opt_125m":
-            return OPT(
-                vocab_size=50_272,
-                hidden_size=768,
-                max_position_embeddings=2050,
-                num_attn_heads=12,
-                num_layers=12,
-                sharded_weight_urls=[
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/125m/reshard-model_part-0.pt",
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/125m/reshard-model_part-1.pt",
-                ],
-                device=device,
-                dtype=dtype,
-                keep_meta=keep_meta,
-            )
-        case "opt_1.3b":
-            return OPT(
-                vocab_size=50_272,
-                hidden_size=2048,
-                max_position_embeddings=2050,
-                num_attn_heads=32,
-                num_layers=24,
-                sharded_weight_urls=[
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/1.3b/reshard-model_part-0.pt",
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/1.3b/reshard-model_part-1.pt",
-                ],
-                device=device,
-                dtype=dtype,
-                keep_meta=keep_meta,
-            )
-        case "opt_2.7b":
-            return OPT(
-                vocab_size=50_272,
-                hidden_size=2560,
-                max_position_embeddings=2050,
-                num_attn_heads=32,
-                num_layers=32,
-                sharded_weight_urls=[
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/2.7b/reshard-model_part-0.pt",
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/2.7b/reshard-model_part-1.pt",
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/2.7b/reshard-model_part-2.pt",
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/2.7b/reshard-model_part-3.pt",
-                ],
-                device=device,
-                dtype=dtype,
-                keep_meta=keep_meta,
-            )
-        case "opt_6.7b":
-            return OPT(
-                vocab_size=50_272,
-                hidden_size=4096,
-                max_position_embeddings=2050,
-                num_attn_heads=32,
-                num_layers=32,
-                sharded_weight_urls=[
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/6.7b/reshard-model_part-0.pt",
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/6.7b/reshard-model_part-1.pt",
-                ],
-                device=device,
-                dtype=dtype,
-                keep_meta=keep_meta,
-            )
-        case "opt_13b":
-            return OPT(
-                vocab_size=50_272,
-                hidden_size=5120,
-                max_position_embeddings=2050,
-                num_attn_heads=40,
-                num_layers=40,
-                sharded_weight_urls=[
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/13b/reshard-model_part-0.pt",
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/13b/reshard-model_part-1.pt",
-                ],
-                device=device,
-                dtype=dtype,
-                keep_meta=keep_meta,
-            )
-        case "opt_30b":
-            return OPT(
-                vocab_size=50_272,
-                hidden_size=7168,
-                max_position_embeddings=2050,
-                num_attn_heads=56,
-                num_layers=48,
-                sharded_weight_urls=[
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/30b/reshard-model_part-0.pt",
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/30b/reshard-model_part-1.pt",
-                ],
-                device=device,
-                dtype=dtype,
-                keep_meta=keep_meta,
-            )
-        case "opt_66b":
-            return OPT(
-                vocab_size=50_272,
-                hidden_size=9216,
-                max_position_embeddings=2050,
-                num_attn_heads=72,
-                num_layers=64,
-                sharded_weight_urls=[
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard0.pt",
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard1.pt",
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard2.pt",
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard3.pt",
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard4.pt",
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard5.pt",
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard6.pt",
-                    "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard7.pt",
-                ],
-                device=device,
-                dtype=dtype,
-                keep_meta=keep_meta,
-            )
+    if key == "opt_mini":
+        return OPT(
+            vocab_size=50_272,
+            hidden_size=128,
+            max_position_embeddings=128,
+            num_attn_heads=2,
+            num_layers=2,
+            device=device,
+            dtype=dtype,
+            keep_meta=keep_meta,
+        )
+    if key == "opt_125m":
+        return OPT(
+            vocab_size=50_272,
+            hidden_size=768,
+            max_position_embeddings=2050,
+            num_attn_heads=12,
+            num_layers=12,
+            sharded_weight_urls=[
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/125m/reshard-model_part-0.pt",
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/125m/reshard-model_part-1.pt",
+            ],
+            device=device,
+            dtype=dtype,
+            keep_meta=keep_meta,
+        )
+    if key == "opt_1.3b":
+        return OPT(
+            vocab_size=50_272,
+            hidden_size=2048,
+            max_position_embeddings=2050,
+            num_attn_heads=32,
+            num_layers=24,
+            sharded_weight_urls=[
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/1.3b/reshard-model_part-0.pt",
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/1.3b/reshard-model_part-1.pt",
+            ],
+            device=device,
+            dtype=dtype,
+            keep_meta=keep_meta,
+        )
+    if key == "opt_2.7b":
+        return OPT(
+            vocab_size=50_272,
+            hidden_size=2560,
+            max_position_embeddings=2050,
+            num_attn_heads=32,
+            num_layers=32,
+            sharded_weight_urls=[
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/2.7b/reshard-model_part-0.pt",
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/2.7b/reshard-model_part-1.pt",
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/2.7b/reshard-model_part-2.pt",
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/2.7b/reshard-model_part-3.pt",
+            ],
+            device=device,
+            dtype=dtype,
+            keep_meta=keep_meta,
+        )
+    if key == "opt_6.7b":
+        return OPT(
+            vocab_size=50_272,
+            hidden_size=4096,
+            max_position_embeddings=2050,
+            num_attn_heads=32,
+            num_layers=32,
+            sharded_weight_urls=[
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/6.7b/reshard-model_part-0.pt",
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/6.7b/reshard-model_part-1.pt",
+            ],
+            device=device,
+            dtype=dtype,
+            keep_meta=keep_meta,
+        )
+    if key == "opt_13b":
+        return OPT(
+            vocab_size=50_272,
+            hidden_size=5120,
+            max_position_embeddings=2050,
+            num_attn_heads=40,
+            num_layers=40,
+            sharded_weight_urls=[
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/13b/reshard-model_part-0.pt",
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/13b/reshard-model_part-1.pt",
+            ],
+            device=device,
+            dtype=dtype,
+            keep_meta=keep_meta,
+        )
+    if key == "opt_30b":
+        return OPT(
+            vocab_size=50_272,
+            hidden_size=7168,
+            max_position_embeddings=2050,
+            num_attn_heads=56,
+            num_layers=48,
+            sharded_weight_urls=[
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/30b/reshard-model_part-0.pt",
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/30b/reshard-model_part-1.pt",
+            ],
+            device=device,
+            dtype=dtype,
+            keep_meta=keep_meta,
+        )
+    if key == "opt_66b":
+        return OPT(
+            vocab_size=50_272,
+            hidden_size=9216,
+            max_position_embeddings=2050,
+            num_attn_heads=72,
+            num_layers=64,
+            sharded_weight_urls=[
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard0.pt",
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard1.pt",
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard2.pt",
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard3.pt",
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard4.pt",
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard5.pt",
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard6.pt",
+                "https://dl.fbaipublicfiles.com/opt/v1_20220502/66b/reshard-model_part-0-shard7.pt",
+            ],
+            device=device,
+            dtype=dtype,
+            keep_meta=keep_meta,
+        )
+
+    raise NotImplementedError(f"Invalid OPT model: {key}")

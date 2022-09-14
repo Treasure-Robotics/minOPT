@@ -1,7 +1,4 @@
-import contextlib
-
 import torch
-from torch.amp import autocast
 
 from minopt.model import opt
 from minopt.sampling import Sampler
@@ -16,18 +13,14 @@ def test_sampling_matches_training() -> None:
     argmax token values.
     """
 
-    amp_device, device, dtype = auto_device_and_dtype()
-    is_mps = device == torch.device("mps")
-    model = opt("opt_mini", device=device, dtype=dtype)
-    sampler = Sampler(model, "greedy", 8)
+    _, device, _ = auto_device_and_dtype()
+    model = opt("opt_mini", device=device, dtype=torch.float32)
+    sampler = Sampler(model, "greedy", 8).eval()
     tokens = torch.randint(0, model.vocab_size, (1, 4), device=device)
     prefix_len = tokens.shape[1]
 
-    with contextlib.ExitStack() as ctx:
-        if not is_mps:
-            ctx.enter_context(autocast(amp_device, dtype=dtype))
-        eval_tokens = sampler(tokens)
-        pred_logits, _ = model(eval_tokens)  # pylint: disable=not-callable
-        train_tokens = pred_logits.argmax(dim=1)
-        tokens_eq = eval_tokens[:, prefix_len + 1 :] == train_tokens[:, prefix_len:-1]
-        assert tokens_eq.all().item()
+    eval_tokens = sampler(tokens)
+    pred_logits, _ = model(eval_tokens)  # pylint: disable=not-callable
+    train_tokens = pred_logits.argmax(dim=1)
+    tokens_eq = eval_tokens[:, prefix_len + 1 :] == train_tokens[:, prefix_len:-1]
+    assert tokens_eq.all().item()

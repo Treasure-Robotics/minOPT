@@ -41,7 +41,7 @@ model = opt("opt_125m")
 
 ### Requirements
 
-- Python 3.10
+- Python 3.8
 - PyTorch
 - HuggingFace Transformers (for tokenizer)
 
