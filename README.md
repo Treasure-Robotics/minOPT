@@ -2,8 +2,10 @@
 
 Minimal OPT implementation. Some features:
 
-- TorchScript and TensorRT compatible
-- Int8 weights and inference
+- [x] TorchScript compatible
+- [ ] TensorRT compatible
+- [ ] Int8 weights and inference
+- [ ] Multi-GPU inference
 
 ## Getting Started
 
