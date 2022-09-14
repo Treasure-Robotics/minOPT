@@ -59,7 +59,7 @@ from minopt.sampling import Sampler
 
 model = opt("opt_125m")
 tokenizer = GPT2Tokenizer.from_pretrained("facebook/opt-125m")
-sampler = Sampler(model, mode="greedy")
+sampler = Sampler(model, mode="greedy", max_steps=16)
 
 # Converts some prompt from text to tokens.
 prev_tokens = tokenizer(
@@ -69,7 +69,7 @@ prev_tokens = tokenizer(
 )["input_ids"]
 
 # Gets the predicted next tokens.
-sampled_tokens = sampler(prev_token=prev_tokens, max_steps=32)
+sampled_tokens = sampler(prev_tokens)
 
 # Converts back to text.
 pred_tokens = tokenizer.decode(sampled_tokens[0, prev_tokens.shape[1] :])

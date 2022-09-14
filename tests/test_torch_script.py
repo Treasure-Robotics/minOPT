@@ -18,5 +18,5 @@ def test_torch_script_compatible(sampling_mode: SamplingMode) -> None:
     """
 
     model = opt("opt_125m", keep_meta=True)
-    sampler = Sampler(model, sampling_mode)
+    sampler = Sampler(model, sampling_mode, max_steps=16)
     torch.jit.script(sampler)

@@ -27,7 +27,12 @@ def main() -> None:
 
     tokenizer: GPT2Tokenizer = GPT2Tokenizer.from_pretrained("facebook/opt-125m")
     model = opt(args.key, device=device, dtype=dtype)
-    sampler = Sampler(model, mode=args.mode, nucleus_prob=args.nucleus_prob)
+    sampler = Sampler(
+        model,
+        mode=args.mode,
+        max_steps=args.steps,
+        nucleus_prob=args.nucleus_prob,
+    )
 
     def print_func(s: str) -> None:
         # print(s, end="", flush=True)
@@ -42,7 +47,7 @@ def main() -> None:
                 return_tensors="pt",
             )["input_ids"]
             prev_tokens = prev_tokens.to(device)
-            sampled_tokens = sampler(prev_token=prev_tokens, max_steps=args.steps)
+            sampled_tokens = sampler(prev_tokens)
             return tokenizer.decode(sampled_tokens[0, prev_tokens.shape[1] :])
 
     if args.prompt is None:

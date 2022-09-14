@@ -42,12 +42,13 @@ def sample_step(next_logits: Tensor, mode: str, nucleus_prob: float) -> Tensor:
 
 
 class Sampler(nn.Module):
-    __constants__ = ["mode", "nucleus_prob"]
+    __constants__ = ["mode", "max_steps", "nucleus_prob"]
 
     def __init__(
         self,
         model: OPT,
         mode: SamplingMode,
+        max_steps: int,
         *,
         nucleus_prob: float = 0.8,
     ) -> None:
@@ -56,6 +57,7 @@ class Sampler(nn.Module):
         Args:
             model: The model to sample from
             mode: The sampling mode to use
+            max_steps: The maximum number of steps to sample
             nucleus_prob: Nucleus sampling probability
         """
 
@@ -63,14 +65,14 @@ class Sampler(nn.Module):
 
         self.model = model
         self.mode = mode
+        self.max_steps = max_steps
         self.nucleus_prob = nucleus_prob
 
-    def sample(self, prev_token: Tensor, max_steps: int) -> Tensor:
+    def sample(self, prev_token: Tensor) -> Tensor:
         """Samples a sequence for a given prefix.
 
         Args:
             prev_token: The prefix to use, with shape (B, T)
-            max_steps: The maximum number of steps to sample
 
         Returns:
             The sampled tokens, with shape (B, T)
@@ -85,7 +87,7 @@ class Sampler(nn.Module):
         prev_token = sample_step(next_logits[..., -1], self.mode, self.nucleus_prob)
         all_tokens = torch.cat((all_tokens, prev_token), dim=1)
 
-        for _ in range(max_steps):
+        for _ in range(self.max_steps):
             next_logits, kv_caches = self.model(
                 prev_token,
                 kv_caches=kv_caches,
@@ -98,5 +100,5 @@ class Sampler(nn.Module):
 
         return all_tokens
 
-    def forward(self, prev_token: Tensor, max_steps: int) -> Tensor:
-        return self.sample(prev_token, max_steps)
+    def forward(self, prev_token: Tensor) -> Tensor:
+        return self.sample(prev_token)
