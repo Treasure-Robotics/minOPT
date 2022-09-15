@@ -1014,6 +1014,9 @@ def opt(
 
     Returns:
         The constructed OPT model
+
+    Raises:
+        NotImplementedError: If the key is invalid
     """
 
     if key == "opt_mini":
